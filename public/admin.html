@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpotSim Admin</title>
+  <style>
+    :root {
+      --bg: #0a0810;
+      --panel: #110e1a;
+      --panel2: #1a1528;
+      --border: #2a2340;
+      --text: #f0eaf8;
+      --muted: #7d7199;
+      --green: #10b981;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --purple-soft: #c4b5fd;
+      --purple-dim: rgba(139, 92, 246, 0.12);
+      --purple-border: rgba(139, 92, 246, 0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .top {
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      background: linear-gradient(180deg, #130f1c, #0e0b16);
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 18px;
+      background: linear-gradient(135deg, #e9d5ff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--purple-soft);
+      background: var(--purple-dim);
+      border: 1px solid var(--purple-border);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .top-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+    .top-right a, .top-right button {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .top-right a:hover, .top-right button:hover {
+      color: var(--purple-soft);
+      border-color: var(--purple-border);
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 32px 20px; }
+
+    /* Login */
+    .login-box {
+      max-width: 400px;
+      margin: 80px auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+    }
+    .login-box h1 { font-size: 22px; margin-bottom: 6px; }
+    .login-box .sub { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+    .field input {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: var(--purple);
+      box-shadow: 0 0 0 3px var(--purple-dim);
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    }
+    .btn-primary:hover { opacity: 0.95; }
+    .err {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: var(--red);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .err.show { display: block; }
+    .hidden { display: none !important; }
+
+    /* Dashboard */
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 14px;
+      color: var(--purple-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+    .settings-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .settings-row label { color: var(--muted); font-size: 13px; }
+    .settings-row input {
+      width: 160px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+    }
+    .btn-sm {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--purple);
+      color: #fff;
+    }
+    .btn-sm.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-sm.danger:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 550; font-size: 11px; text-transform: uppercase; }
+    td button {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      margin-right: 4px;
+    }
+    td button:hover {
+      border-color: var(--purple);
+      color: var(--purple-soft);
+    }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel2);
+      border: 1px solid var(--purple-border);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 13px;
+      z-index: 100;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .stat .label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .stat .value { font-size: 22px; font-weight: 700; }
+
+    @media (max-width: 700px) {
+      .top { padding: 0 12px; flex-wrap: wrap; height: auto; min-height: 56px; padding: 10px 12px; }
+      .wrap { padding: 16px 12px; }
+      .login-box { margin: 40px auto; padding: 24px 18px; }
+      table { font-size: 11px; display: block; overflow-x: auto; }
+      .settings-row { flex-direction: column; align-items: stretch; }
+      .settings-row input { width: 100%; }
+      td button { display: inline-block; margin: 2px 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">SpotSim</div>
+    <span class="badge">ADMIN</span>
+    <span class="badge" id="pending-badge" style="display:none;background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.4);color:var(--red)"></span>
+    <div class="top-right">
+      <a href="/">← User trading site</a>
+      <span id="admin-name" style="color:var(--muted);font-size:13px"></span>
+      <button type="button" id="btn-logout" class="hidden">Log out</button>
+    </div>
+  </div>
+
+  <!-- Admin login -->
+  <div id="login-view">
+    <div class="login-box">
+      <h1>Admin login</h1>
+      <p class="sub">Manage users and simulation starting balances. Trading is on the user site.</p>
+      <div class="err" id="login-err"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="username" placeholder="admin@spotsim.local" autocomplete="email" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" id="btn-login">Log in as admin</button>
+      <p style="margin-top:16px;font-size:11px;color:var(--muted);text-align:center">
+        Default: admin@spotsim.local / admin123
+      </p>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dash-view" class="hidden">
+    <div class="wrap">
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="label">Total users</div>
+          <div class="value" id="stat-users">—</div>
+        </div>
+        <div class="stat">
+          <div class="label">Default start balance</div>
+          <div class="value" id="stat-default">—</div>
+        </div>
+      </div>
+
+
+      <div class="card" id="requests-card">
+        <h2>Deposit &amp; withdraw requests <span id="pending-count-label" style="color:var(--red);font-weight:700"></span></h2>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Approve or reject user deposit and withdrawal requests. Balances change only after approval.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Requested</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="requests-body">
+            <tr><td colspan="6" style="color:var(--muted)">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Default starting balance (new registrations)</h2>
+        <div class="settings-row">
+          <label>USDT amount given to each new user</label>
+          <input type="number" id="default-balance" min="0" step="100" />
+          <button type="button" class="btn-sm" id="save-default">Save default</button>
+        </div>
+        <p style="margin-top:12px;font-size:12px;color:var(--muted)">
+          Only affects users who register after you save. Existing users keep their current starting balance unless you reset them below.
+        </p>
+      </div>
+
+
+      <div class="card">
+        <h2>Change admin password</h2>
+        <div id="pw-err" class="err" style="margin-bottom:12px"></div>
+        <div id="pw-ok" class="err" style="margin-bottom:12px;background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:var(--green)"></div>
+        <div class="settings-row" style="flex-direction:column;align-items:stretch;gap:10px;max-width:360px">
+          <div class="field" style="margin:0">
+            <label>Current password</label>
+            <input type="password" id="pw-current" style="width:100%" autocomplete="current-password" />
+          </div>
+          <div class="field" style="margin:0">
+            <label>New password</label>
+            <input type="password" id="pw-new" style="width:100%" placeholder="Min 6 characters" autocomplete="new-password" />
+          </div>
+          <div class="field" style="margin:0">
+            <label>Confirm new password</label>
+            <input type="password" id="pw-confirm" style="width:100%" autocomplete="new-password" />
+          </div>
+          <button type="button" class="btn-sm" id="pw-save" style="width:auto;align-self:flex-start">Update password</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Users</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Start</th>
+              <th>USDT</th>
+              <th>Trades</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    let TOKEN = localStorage.getItem('spotsim_admin_token') || null;
+    let USER = null;
+
+    async function api(path, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+      if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+      const res = await fetch(API + path, { ...options, headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    function toast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2500);
+    }
+
+    function fmt(n) {
+      return Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function showLogin() {
+      document.getElementById('login-view').classList.remove('hidden');
+      document.getElementById('dash-view').classList.add('hidden');
+      document.getElementById('btn-logout').classList.add('hidden');
+      document.getElementById('admin-name').textContent = '';
+    }
+
+    function showDash() {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('dash-view').classList.remove('hidden');
+      document.getElementById('btn-logout').classList.remove('hidden');
+      document.getElementById('admin-name').textContent = USER?.username || '';
+      loadDashboard();
+    }
+
+    
+    async function loadMoneyRequests() {
+      try {
+        const { requests } = await api('/api/admin/money/requests?status=pending');
+        const body = document.getElementById('requests-body');
+        const badge = document.getElementById('pending-badge');
+        const label = document.getElementById('pending-count-label');
+        const n = requests.length;
+        if (badge) {
+          if (n > 0) {
+            badge.style.display = '';
+            badge.textContent = n + ' pending';
+          } else {
+            badge.style.display = 'none';
+          }
+        }
+        if (label) label.textContent = n ? '(' + n + ' pending)' : '';
+        if (!requests.length) {
+          body.innerHTML = '<tr><td colspan="6" style="color:var(--muted)">No pending requests</td></tr>';
+          return;
+        }
+        body.innerHTML = requests.map(r => `
+          <tr>
+            <td><strong>${r.username}</strong></td>
+            <td style="color:${r.type === 'deposit' ? 'var(--green)' : 'var(--red)'};font-weight:600">${r.type}</td>
+            <td>$${fmt(r.amount)}</td>
+            <td style="color:var(--purple-soft)">${r.status}</td>
+            <td>${r.created_at ? new Date(r.created_at).toLocaleString() : '—'}</td>
+            <td>
+              <button data-act="approve" data-id="${r.id}" style="border-color:var(--green);color:var(--green)">Approve</button>
+              <button data-act="reject" data-id="${r.id}" style="border-color:var(--red);color:var(--red)">Reject</button>
+            </td>
+          </tr>
+        `).join('');
+        body.querySelectorAll('button').forEach(btn => {
+          btn.onclick = async () => {
+            try {
+              await api('/api/admin/money/requests/' + btn.dataset.id, {
+                method: 'POST',
+                body: JSON.stringify({ action: btn.dataset.act }),
+              });
+              toast(btn.dataset.act === 'approve' ? 'Approved' : 'Rejected');
+              loadDashboard();
+            } catch (e) { toast(e.message); }
+          };
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function loadDashboard() {
+      await loadMoneyRequests();
+
+      try {
+        const settings = await api('/api/admin/settings');
+        document.getElementById('default-balance').value = settings.default_starting_balance;
+        document.getElementById('stat-default').textContent = '$' + fmt(settings.default_starting_balance);
+
+        const { users } = await api('/api/admin/users');
+        document.getElementById('stat-users').textContent = users.length;
+
+        const body = document.getElementById('users-body');
+        body.innerHTML = users.map(u => {
+          const name = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username;
+          return `
+          <tr>
+            <td><strong>${name}</strong></td>
+            <td>${u.email || '—'}</td>
+            <td>${u.role}</td>
+            <td>$${fmt(u.starting_balance)}</td>
+            <td>$${fmt(u.usdt)}</td>
+            <td>${u.trades}</td>
+            <td>
+              <button data-act="pw" data-id="${u.id}">Reset password</button>
+              ${u.role === 'admin' ? '' : `
+                <button data-act="set" data-id="${u.id}">Set start</button>
+                <button data-act="reset" data-id="${u.id}" data-start="${u.starting_balance}">Reset portfolio</button>
+                <button data-act="del" data-id="${u.id}">Delete</button>
+              `}
+            </td>
+          </tr>`;
+        }).join('');
+
+        body.querySelectorAll('button').forEach(btn => {
+          btn.onclick = async () => {
+            const id = btn.dataset.id;
+            const act = btn.dataset.act;
+            try {
+              if (act === 'pw') {
+                const pw = prompt('New password for this user (min 6 chars):');
+                if (!pw) return;
+                if (pw.length < 6) return toast('Password too short');
+                await api('/api/admin/users/' + id + '/reset-password', {
+                  method: 'POST',
+                  body: JSON.stringify({ new_password: pw }),
+                });
+                toast('Password reset');
+              } else if (act === 'del') {
+                if (!confirm('Delete this user permanently?')) return;
+                await api('/api/admin/users/' + id, { method: 'DELETE' });
+                toast('User deleted');
+              } else if (act === 'reset') {
+                if (!confirm('Reset this user\'s portfolio to their starting balance?')) return;
+                await api('/api/admin/users/' + id + '/balance', {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                    starting_balance: parseFloat(btn.dataset.start),
+                    reset_now: true,
+                  }),
+                });
+                toast('Portfolio reset');
+              } else if (act === 'set') {
+                const v = prompt('Starting balance (USDT) for this user:', '10000');
+                if (v == null) return;
+                const n = parseFloat(v);
+                if (!Number.isFinite(n) || n < 0) return toast('Invalid amount');
+                const alsoReset = confirm('Also reset their current portfolio to this amount?');
+                await api('/api/admin/users/' + id + '/balance', {
+                  method: 'PUT',
+                  body: JSON.stringify({ starting_balance: n, reset_now: alsoReset }),
+                });
+                toast('Updated');
+              }
+              loadDashboard();
+            } catch (e) {
+              toast(e.message);
+            }
+          };
+        });
+      } catch (e) {
+        if (String(e.message).includes('Admin') || String(e.message).includes('auth')) {
+          TOKEN = null;
+          localStorage.removeItem('spotsim_admin_token');
+          showLogin();
+        }
+        toast(e.message);
+      }
+    }
+
+    document.getElementById('btn-login').onclick = async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const err = document.getElementById('login-err');
+      err.classList.remove('show');
+      try {
+        const data = await api('/api/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: username, password }),
+        });
+        if (data.user.role !== 'admin') {
+          throw new Error('This account is not an admin. Use the user site to trade.');
+        }
+        TOKEN = data.token;
+        USER = data.user;
+        localStorage.setItem('spotsim_admin_token', TOKEN);
+        showDash();
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.add('show');
+      }
+    };
+
+    document.getElementById('password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('btn-login').click();
+    });
+
+    document.getElementById('btn-logout').onclick = () => {
+      TOKEN = null;
+      USER = null;
+      localStorage.removeItem('spotsim_admin_token');
+      showLogin();
+    };
+
+    
+    document.getElementById('pw-save').onclick = async () => {
+      const err = document.getElementById('pw-err');
+      const ok = document.getElementById('pw-ok');
+      err.classList.remove('show');
+      ok.classList.remove('show');
+      ok.style.display = 'none';
+      const cur = document.getElementById('pw-current').value;
+      const nw = document.getElementById('pw-new').value;
+      const conf = document.getElementById('pw-confirm').value;
+      try {
+        if (!cur) throw new Error('Enter current password');
+        if (nw.length < 6) throw new Error('New password must be at least 6 characters');
+        if (nw !== conf) throw new Error('New passwords do not match');
+        await api('/api/me/password', {
+          method: 'PUT',
+          body: JSON.stringify({ current_password: cur, new_password: nw }),
+        });
+        document.getElementById('pw-current').value = '';
+        document.getElementById('pw-new').value = '';
+        document.getElementById('pw-confirm').value = '';
+        ok.textContent = 'Password updated';
+        ok.classList.add('show');
+        ok.style.display = 'block';
+      } catch (e) {
+        err.textContent = e.message;
+        err.classList.add('show');
+      }
+    };
+
+    document.getElementById('save-default').onclick = async () => {
+      const n = parseFloat(document.getElementById('default-balance').value);
+      try {
+        await api('/api/admin/settings', {
+          method: 'PUT',
+          body: JSON.stringify({ default_starting_balance: n }),
+        });
+        toast('Default starting balance saved');
+        loadDashboard();
+      } catch (e) {
+        toast(e.message);
+      }
+    };
+
+    
+    // poll money requests
+    setInterval(() => {
+      if (TOKEN && USER && !document.getElementById('dash-view').classList.contains('hidden')) {
+        loadMoneyRequests();
+      }
+    }, 10000);
+
+    // Boot
+    (async () => {
+      if (!TOKEN) return showLogin();
+      try {
+        const { user } = await api('/api/me');
+        if (user.role !== 'admin') {
+          TOKEN = null;
+          localStorage.removeItem('spotsim_admin_token');
+          return showLogin();
+        }
+        USER = user;
+        showDash();
+      } catch {
+        TOKEN = null;
+        localStorage.removeItem('spotsim_admin_token');
+        showLogin();
+      }
+    })();
+  </script>
+</body>
+</html>
